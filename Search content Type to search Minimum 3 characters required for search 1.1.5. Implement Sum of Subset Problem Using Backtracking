@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int *subset;
+    int size;
+    struct Node *next;
+} Node;
+
+int a[100], current[100];
+int n, target, count = 0;
+Node *head = NULL;
+
+void saveSubset(int size) {
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    if (newNode == NULL) return;
+
+    newNode->subset = NULL;
+
+    if (size > 0) {
+        newNode->subset = (int *)malloc(size * sizeof(int));
+        if (newNode->subset == NULL) {
+            free(newNode);
+            return;
+        }
+
+        for (int i = 0; i < size; i++)
+            newNode->subset[i] = current[i];
+    }
+
+    newNode->size = size;
+
+    // Insert at the beginning to reverse discovery order
+    newNode->next = head;
+    head = newNode;
+    count++;
+}
+
+void findSubsets(int index, int sum, int size) {
+    if (index == n) {
+        if (sum == target)
+            saveSubset(size);
+        return;
+    }
+
+    // Include the current element
+    current[size] = a[index];
+    findSubsets(index + 1, sum + a[index], size + 1);
+
+    // Exclude the current element
+    findSubsets(index + 1, sum, size);
+}
+
+int main(void) {
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+        scanf("%d", &a[i]);
+
+    scanf("%d", &target);
+
+    findSubsets(0, 0, 0);
+
+    if (count == 0) {
+        printf("-1\n");
+    } else {
+        Node *temp = head;
+
+        while (temp != NULL) {
+            for (int i = 0; i < temp->size; i++) {
+                if (i > 0) printf(" ");
+                printf("%d", temp->subset[i]);
+            }
+            printf(" \n");
+            temp = temp->next;
+        }
+    }
+
+    // Free allocated memory
+    while (head != NULL) {
+        Node *temp = head;
+        head = head->next;
+        free(temp->subset);
+        free(temp);
+    }
+
+    return 0;
+}
